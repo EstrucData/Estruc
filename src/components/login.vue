@@ -39,8 +39,8 @@ import Swal from 'sweetalert2';
 export default {
   data() {
     return {
-      username: 'tadeo',
-      password: 'qwerty',
+      username: '',
+      password: '',
       newUsername: '',
       newPassword: '',
       loggedIn: false,
