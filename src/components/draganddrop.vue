@@ -7,8 +7,7 @@
            :class="card.type"
            draggable="true"
            @dragstart="dragStartGeneral(index)"
-           @dragend="dragEnd"
-           v-bind:title="'Créditos: ' + card.credits"> 
+           @dragend="dragEnd">
         {{ card.name }}
       </div>
     </div>
@@ -21,8 +20,7 @@
            :class="card.type"
            draggable="true"
            @dragstart="dragStart(columnIndex, cardIndex)"
-           @dragend="dragEnd"
-           v-bind:title="'Créditos: ' + card.credits">
+           @dragend="dragEnd">
         {{ card.name }}
       </div>
     </div>
@@ -30,6 +28,8 @@
   <div>
     <button @click="addSemester" class="boton">Agregar Semestre</button>
     <button @click="removeSemester" class="boton">Eliminar Semestre</button>
+    <button @click="calculatePlan" class="boton">Calcular Plan</button>
+    <p v-if="planStatus !== null">{{ planStatus }}</p>
   </div>
 </template>
 
@@ -39,26 +39,21 @@ import { ref } from 'vue';
 export default {
   setup() {
     const initialCardsAnahuac = [
-      { name: 'Ficha 1', type: 'bloque-anahuac', credits: 3 },
-      { name: 'Ficha 4', type: 'bloque-anahuac', credits: 3 },
-      { name: 'Ficha 7', type: 'bloque-anahuac', credits: 3 },
-      { name: 'Ficha 10', type: 'bloque-anahuac', credits: 3 },
-      { name: 'Ficha 13', type: 'bloque-anahuac', credits: 3 },
+      { name: 'Liderazgo y Desarrollo Personal', type: 'bloque-anahuac', credits: 3, prerequisites: [] },
+      { name: 'Antropología Fundamental', type: 'bloque-anahuac', credits: 3, prerequisites: ['Liderazgo y Desarrollo Personal'] },
+      { name: 'Persona y Trascendencia', type: 'bloque-anahuac', credits: 3, prerequisites: ['Antropología Fundamental'] },
     ];
 
     const initialCardsProfesional = [
-      { name: 'Ficha 2', type: 'bloque-profesional', credits: 4.5 },
-      { name: 'Ficha 5', type: 'bloque-profesional', credits: 4.5 },
-      { name: 'Ficha 8', type: 'bloque-profesional', credits: 4.5 },
-      { name: 'Ficha 11', type: 'bloque-profesional', credits: 4.5 },
-      { name: 'Ficha 14', type: 'bloque-profesional', credits: 4.5 },
+      { name: 'Algoritmos y Programación', type: 'bloque-profesional', credits: 4.5, prerequisites: [] },
+      { name: 'Programación Orientada a Objetos', type: 'bloque-profesional', credits: 4.5, prerequisites: ['Algoritmos y Programación'] },
+      { name: 'Estructura de Datos', type: 'bloque-profesional', credits: 4.5, prerequisites: ['Programación Orientada a Objetos'] },
     ];
 
     const initialCardsInterdisciplinario = [
-      { name: 'Ficha 3', type: 'bloque-interdisciplinario', credits: 6 },
-      { name: 'Ficha 6', type: 'bloque-interdisciplinario', credits: 6 },
-      { name: 'Ficha 9', type: 'bloque-interdisciplinario', credits: 6 },
-      { name: 'Ficha 12', type: 'bloque-interdisciplinario', credits: 6 },
+      { name: 'Habilidades de Emprendimiento', type: 'bloque-interdisciplinario', credits: 6, prerequisites: [] },
+      { name: 'Emprendimiento e Innovación', type: 'bloque-interdisciplinario', credits: 6, prerequisites: ['Habilidades de Emprendimiento'] },
+      { name: 'Responsabilidad Social', type: 'bloque-interdisciplinario', credits: 6, prerequisites: ['Emprendimiento e Innovación'] },
     ];
 
     const droppedCards = ref([...initialCardsAnahuac, ...initialCardsProfesional, ...initialCardsInterdisciplinario]);
@@ -76,6 +71,24 @@ export default {
     ]);
 
     let draggedCard = null;
+
+    const subjects = {
+      ...initialCardsAnahuac.reduce((acc, card) => {
+        acc[card.name] = card.prerequisites;
+        return acc;
+      }, {}),
+      ...initialCardsProfesional.reduce((acc, card) => {
+        acc[card.name] = card.prerequisites;
+        return acc;
+      }, {}),
+      ...initialCardsInterdisciplinario.reduce((acc, card) => {
+        acc[card.name] = card.prerequisites;
+        return acc;
+      }, {})
+    };
+
+    const availableSubjects = ref([]);
+    const planStatus = ref(null);
 
     function dragStart(columnIndex, cardIndex) {
       draggedCard = JSON.parse(JSON.stringify(columns.value[columnIndex].cards[cardIndex]));
@@ -133,29 +146,52 @@ export default {
       }
     }
 
-    return { columns, droppedCards, dragStart, dragStartGeneral, dragEnd, dropToColumn, dropToMateria, addSemester, removeSemester };
+    function calculatePlan() {
+      availableSubjects.value = [];
+      planStatus.value = null;
+
+      for (let i = 0; i < columns.value.length; i++) {
+        const column = columns.value[i];
+        if (column.cards.length > 0) {
+          const columnSubjects = column.cards.map(card => card.name);
+          let isValid = true;
+
+          // Verificar si cada materia tiene sus prerequisitos en la columna
+          for (let j = 0; j < columnSubjects.length; j++) {
+            const subject = columnSubjects[j];
+            const prerequisites = subjects[subject];
+            if (prerequisites) {
+              for (let k = 0; k < prerequisites.length; k++) {
+                const prerequisite = prerequisites[k];
+                if (!columnSubjects.includes(prerequisite)) {
+                  isValid = false;
+                  planStatus.value = `Plan Erróneo: No puedes cursar ${subject} sin haber tomado ${prerequisite}`;
+                  break;
+                }
+              }
+              if (!isValid) break;
+            }
+          }
+
+          if (!isValid) {
+            break;
+          }
+        }
+      }
+
+      if (planStatus.value === null) {
+        planStatus.value = "Plan Correcto: Puedes cursar todas las materias en el orden adecuado.";
+      }
+    }
+
+    return { columns, droppedCards, dragStart, dragStartGeneral, dragEnd, dropToColumn, dropToMateria, addSemester, removeSemester, calculatePlan, availableSubjects, planStatus };
   },
 };
 </script>
 
-
-<style>
+<style scoped>
 .flex {
   display: flex;
-}
-
-.drop-container {
-  flex: 1;
-  padding: 20px;
-  background-color: #f0f0f0;
-  border: 1px solid #ccc;
-  margin-right: 20px;
-}
-
-.column-container {
-  display: flex;
-  flex-wrap: wrap;
-  flex: 2;
 }
 
 .column {
@@ -167,7 +203,6 @@ export default {
   margin-right: 20px;
   margin-top: 10px;
   border-radius: 10px;
-  
 }
 
 .card {
@@ -182,15 +217,18 @@ export default {
 }
 
 .bloque-anahuac {
-  background-color: #FF5733; 
+  background-color: #FF5733; /* Naranja */
+  color: white;
 }
 
 .bloque-profesional {
-  background-color: #3498DB;
+  background-color: #3498DB; /* Azul */
+  color: white;
 }
 
 .bloque-interdisciplinario {
-  background-color: #58D68D; 
+  background-color: #58D68D; /* Verde */
+  color: white;
 }
 
 .materia {
@@ -202,17 +240,6 @@ export default {
   margin-top: 10px;
   margin-bottom: 10px;
   border-radius: 10px;
-}
-
-.container {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh; 
-}
-
-.bottom-button {
-  margin-top: auto;
-  text-align: center; 
 }
 
 .boton {
@@ -240,8 +267,3 @@ export default {
   }
 }
 </style>
-
-
-
-
-
