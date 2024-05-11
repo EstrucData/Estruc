@@ -10,6 +10,7 @@
       </div>
       <button @click="calcularMateriasFaltantes">Calcular materias faltantes</button>
       <button @click="consultarPlan">Consultar plan de estudio</button>
+      <button @click="entrarDragandDrop">Plan interactivo</button>
     </div>
   </template>
   
@@ -28,6 +29,9 @@
       },
       consultarPlan() {
         this.$router.push('/plan'); 
+      },
+      entrarDragandDrop() {
+        this.$router.push('/draganddrop'); 
       },
     },
   };

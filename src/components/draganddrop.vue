@@ -87,7 +87,6 @@ export default {
       }, {})
     };
 
-    const availableSubjects = ref([]);
     const planStatus = ref(null);
 
     function dragStart(columnIndex, cardIndex) {
@@ -147,7 +146,6 @@ export default {
     }
 
     function calculatePlan() {
-      availableSubjects.value = [];
       planStatus.value = null;
 
       for (let i = 0; i < columns.value.length; i++) {
@@ -156,14 +154,19 @@ export default {
           const columnSubjects = column.cards.map(card => card.name);
           let isValid = true;
 
-          // Verificar si cada materia tiene sus prerequisitos en la columna
+          // Verificar si cada materia tiene sus prerequisitos en semestres anteriores
           for (let j = 0; j < columnSubjects.length; j++) {
             const subject = columnSubjects[j];
             const prerequisites = subjects[subject];
             if (prerequisites) {
               for (let k = 0; k < prerequisites.length; k++) {
                 const prerequisite = prerequisites[k];
-                if (!columnSubjects.includes(prerequisite)) {
+
+                // Buscar el semestre donde se encuentra el prerequisito
+                const prereqSemesterIndex = findSemesterIndex(prerequisite);
+
+                // Verificar si el prerequisito está en un semestre anterior
+                if (prereqSemesterIndex === -1 || prereqSemesterIndex >= i) {
                   isValid = false;
                   planStatus.value = `Plan Erróneo: No puedes cursar ${subject} sin haber tomado ${prerequisite}`;
                   break;
@@ -184,7 +187,18 @@ export default {
       }
     }
 
-    return { columns, droppedCards, dragStart, dragStartGeneral, dragEnd, dropToColumn, dropToMateria, addSemester, removeSemester, calculatePlan, availableSubjects, planStatus };
+    function findSemesterIndex(subjectName) {
+      // Busca el índice del semestre donde se encuentra la materia
+      for (let i = 0; i < columns.value.length; i++) {
+        const column = columns.value[i];
+        if (column.cards.some(card => card.name === subjectName)) {
+          return i; // Retorna el índice del semestre donde se encuentra la materia
+        }
+      }
+      return -1; // Retorna -1 si la materia no está en ningún semestre
+    }
+
+    return { columns, droppedCards, dragStart, dragStartGeneral, dragEnd, dropToColumn, dropToMateria, addSemester, removeSemester, calculatePlan, planStatus };
   },
 };
 </script>
