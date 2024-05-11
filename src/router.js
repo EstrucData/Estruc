@@ -7,6 +7,7 @@ import materias from '@/components/materias.vue'
 import plan from '@/components/plan'
 import draganddrop from './components/draganddrop.vue';
 import logica from './components/logica.vue';
+import citas from './components/citas.vue';
 
 const routes = [
   {path: '/', name: 'home', component: home},
@@ -17,6 +18,7 @@ const routes = [
   {path: '/registro', name: 'registro', component: registro},
   {path: '/draganddrop', name: 'draganddrop', component: draganddrop},
   {path: '/logica', name: 'logica', component: logica},
+  {path: '/citas', name: 'citas', component: citas},
 ];
 
 const router = createRouter({

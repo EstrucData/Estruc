@@ -1,63 +1,82 @@
 <template>
-    <div class="career-and-subjects-container">
-      <div v-if="!selectedCareer">
-        <h1 class="titulo">Selecciona tu carrera</h1>
-        <select v-model="selectedCareer">
-          <option value="">Selecciona una carrera</option>
-          <option value="Tecnologías de la Información y Negocios Digitales">Tecnologías de la Información y Negocios Digitales</option>
-          <option value="Mecatrónica">Mecatrónica</option>
-          <option value="Biomedicina">Biomedicina</option>
-          <option value="Civil">Civil</option>
-        </select>
-        <button @click="selectCareer">Continuar</button>
-      </div>
-      <div v-else>
-        <h1 class="titulo">Bienvenido a nuestra plataforma de seguimiento académico</h1>
-        <p>Aquí podrás ver tu progreso en la carrera y elegir tus próximas materias.</p>
-        <button @click="redirectToSubjects">Seleccionar materias</button>
-      </div>
-    </div>
-  </template>
-  
-  <script>
-  import Swal from 'sweetalert2';
+  <div class="career-and-subjects-container">
+    <h1 class="titulo">Bienvenido a nuestra plataforma de seguimiento académico</h1>
+    <p>Aquí podrás ver tu progreso en la carrera y realizar otras acciones.</p>
+    <button @click="redirectToSubjects">Seleccionar materias</button>
+    <button @click="redirectToCitas">Agendar Cita</button>
 
-  export default {
-    data() {
-      return {
-        selectedCareer: '', // Almacena la carrera seleccionada por el usuario
-      };
+    <!-- Sección de comentarios -->
+    <div class="comentarios">
+      <h2>Comentarios</h2>
+      <ul v-if="!pilaComentarios.estaVacia()">
+        <li v-for="(comentario, index) in pilaComentarios.items" :key="index">{{ comentario }}</li>
+      </ul>
+      <p v-else>No hay comentarios.</p>
+      <label for="nuevoComentario">Agregar Comentario:</label>
+      <input type="text" id="nuevoComentario" v-model="nuevoComentario">
+      <button @click="agregarComentario">Agregar</button>
+      <button @click="sacarComentario">Eliminar Último Comentario</button>
+    </div>
+  </div>
+</template>
+
+<script>
+//import Swal from 'sweetalert2';
+
+class Pila {
+  constructor() {
+    this.items = [];
+  }
+
+  agregarComentario(comentario) {
+    this.items.push(comentario);
+  }
+
+  sacarComentario() {
+    if (this.items.length === 0) {
+      return null;
+    }
+    return this.items.pop();
+  }
+
+  estaVacia() {
+    return this.items.length === 0;
+  }
+}
+
+export default {
+  data() {
+    return {
+      pilaComentarios: new Pila(),
+      nuevoComentario: ''
+    };
+  },
+  methods: {
+    redirectToSubjects() {
+      this.$router.push('/materias'); // Redirige al usuario a la página de selección de materias
     },
-    methods: {
-      selectCareer() {
-        if (this.selectedCareer) {
-          // Continúa solo si se ha seleccionado una carrera
-          // Puedes realizar otras acciones aquí si es necesario
-        } else {
-          Swal.fire('Por favor, selecciona una carrera antes de continuar.');
-        }
-      },
-      redirectToSubjects() {
-        this.$router.push('/materias'); // Redirige al usuario a la página de selección de materias
-      },
+    redirectToCitas() {
+      this.$router.push('/citas'); // Redirige al usuario a la página de citas
     },
-  };
-  </script>
-  
-  <style>
+    agregarComentario() {
+      if (this.nuevoComentario.trim() !== '') {
+        this.pilaComentarios.agregarComentario(this.nuevoComentario);
+        this.nuevoComentario = ''; // Limpiar el campo de comentario después de agregarlo
+      }
+    },
+    sacarComentario() {
+      this.pilaComentarios.sacarComentario();
+    }
+  }
+};
+</script>
+
+<style>
 .career-and-subjects-container {
   max-width: 500px;
   margin: 0 auto;
   padding: 20px;
   text-align: center;
-}
-
-select {
-  width: 100%;
-  padding: 10px;
-  margin-top: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
 }
 
 button {
@@ -84,7 +103,7 @@ p {
   margin-bottom: 20px;
 }
 
-.titulo{
+.titulo {
   padding: 5px;
   border-radius: 10px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -98,14 +117,10 @@ p {
   border: 1px solid #ccc;
 }
 
-.titulo{
+.titulo {
   margin: 0;
   font-weight: bold;
   color: #333;
   margin-bottom: 10px;
 }
-
 </style>
-
-  
-  

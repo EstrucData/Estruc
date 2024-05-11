@@ -37,7 +37,7 @@ export default {
 
           if (response.data && response.data.authenticated) {
             Swal.fire('Inicio de sesión exitoso!', `¡Bienvenido, ${this.username}!`, 'success');
-            this.$router.push('/materias');
+            this.$router.push('/bienvenida');
           } else {
             Swal.fire('Inicio de sesión fallido', 'Usuario o contraseña incorrectos', 'error');
           }
