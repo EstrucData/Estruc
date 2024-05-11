@@ -5,6 +5,8 @@ import registro from '@/components/registro'
 import bienvenida from './components/bienvenida.vue';
 import materias from '@/components/materias.vue'
 import plan from '@/components/plan'
+import draganddrop from './components/draganddrop.vue';
+import logica from './components/logica.vue';
 
 const routes = [
   {path: '/', name: 'home', component: home},
@@ -13,6 +15,8 @@ const routes = [
   {path: '/plan', name: 'plan', component: plan},
   {path: '/login', name: 'login', component: login},
   {path: '/registro', name: 'registro', component: registro},
+  {path: '/draganddrop', name: 'draganddrop', component: draganddrop},
+  {path: '/logica', name: 'logica', component: logica},
 ];
 
 const router = createRouter({
