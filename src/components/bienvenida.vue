@@ -53,15 +53,15 @@ export default {
   },
   methods: {
     redirectToSubjects() {
-      this.$router.push('/materias'); // Redirige al usuario a la página de selección de materias
+      this.$router.push('/materias'); 
     },
     redirectToCitas() {
-      this.$router.push('/citas'); // Redirige al usuario a la página de citas
+      this.$router.push('/citas'); 
     },
     agregarComentario() {
       if (this.nuevoComentario.trim() !== '') {
         this.pilaComentarios.agregarComentario(this.nuevoComentario);
-        this.nuevoComentario = ''; // Limpiar el campo de comentario después de agregarlo
+        this.nuevoComentario = ''; 
       }
     },
     sacarComentario() {
